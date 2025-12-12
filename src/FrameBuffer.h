@@ -53,6 +53,16 @@ struct FrameBuffer {
     void present(HWND hwnd);
 };
 
+void drawLine(FrameBuffer &fb, int x0, int y0, int x1, int y1, uint32_t color);
+
+void drawTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
+void drawScanline(FrameBuffer &fb, int x0, int y, int x1, uint32_t color);
+
 void fillRect(FrameBuffer& fb, int x, int y, int w, int h, uint32_t color);
 
-void drawLine(FrameBuffer &fb, int x0, int y0, int x1, int y1, uint32_t color);
+void fillBottomFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
+void fillTopFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
+void fillTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);

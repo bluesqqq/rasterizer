@@ -22,7 +22,9 @@ void render() {
     g_framebuffer.clear(0xFF000000); // ARGB
 
     fillRect(g_framebuffer, 50, 200, 200, 300, 0xFFFF0000);
-    drawLine(g_framebuffer, 500, 500, 500 + cos(i) * 300, 500 + sin(i) * 300, 0xFFFFFFFF);
+    fillTriangle(g_framebuffer, 500, 500, 500 + cos(i) * 300, 500 + sin(i) * 300, 200, 75, 0xFF00FF00);
+    drawTriangle(g_framebuffer, 500, 500, 500 + cos(i) * 300, 500 + sin(i) * 300, 200, 75, 0xFFFF0000);
+
     g_framebuffer.present(g_hwnd);
 
     i += 0.01;

@@ -117,6 +117,58 @@ void fillRect(FrameBuffer &fb, int x, int y, int w, int h, uint32_t color) {
             fb.setPix(x + _x, y + _y, color);
 }
 
+void fillBottomFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+    float invslope0 = (float)(x1 - x0) / (float)(y1 - y0);
+    float invslope1 = (float)(x2 - x0) / (float)(y2 - y0);
+
+    float curx0 = x0;
+    float curx1 = x0;
+
+    for (int scanlineY = y0; scanlineY <= y1; scanlineY++) {
+        drawScanline(fb, (int)curx0, scanlineY, (int)curx1, color);
+        curx0 += invslope0;
+        curx1 += invslope1;
+    }
+}
+
+void fillTopFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+    float invslope0 = (float)(x2 - x0) / (float)(y2 - y0);
+    float invslope1 = (float)(x2 - x1) / (float)(y2 - y1);
+
+    float curx0 = x2;
+    float curx1 = x2;
+
+    for (int scanlineY = y2; scanlineY > y0; scanlineY--) {
+        drawScanline(fb, (int)curx0, scanlineY, (int)curx1, color);
+        curx0 -= invslope0;
+        curx1 -= invslope1;
+    }
+}
+
+inline void sortByY(int& x0, int& y0, int& x1, int& y1, int& x2, int& y2) {
+    if (y0 > y1) { std::swap(x0, x1); std::swap(y0, y1); }
+    if (y0 > y2) { std::swap(x0, x2); std::swap(y0, y2); }
+    if (y1 > y2) { std::swap(x1, x2); std::swap(y1, y2); }
+}
+
+void fillTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+    // https://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html
+
+    sortByY(x0, y0, x1, y1, x2, y2);
+
+    if (y1 == y2) { 
+        fillBottomFlatTriangle(fb, x0, y0, x1, y1, x2, y2, color);
+    } else if (y0 == y1) {
+        fillTopFlatTriangle(fb, x0, y0, x1, y1, x2, y2, color);
+    } else { // split into topflat and bottom flat
+        int x3 = (int)(x0 + (float)(y1 - y0)* (x2 - x0) / (y2 - y0));
+        int y3 = y1;
+
+        fillBottomFlatTriangle(fb, x0, y0, x1, y1, x3, y3, color);
+        fillTopFlatTriangle(fb, x1, y1, x3, y3, x2, y2, color);
+    }
+}
+
 void drawLine(FrameBuffer &fb, int x0, int y0, int x1, int y1, uint32_t color) {
     bool steep = abs(y1 - y0) > abs(x1 - x0);
 
@@ -157,4 +209,27 @@ void drawTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y
     drawLine(fb, x0, y0, x1, y1, color);
     drawLine(fb, x1, y1, x2, y2, color);
     drawLine(fb, x2, y2, x0, y0, color);
+}
+
+void drawScanline(FrameBuffer &fb, int x0, int y, int x1, uint32_t color) {
+    if (y < 0 || y >= fb.height) return;
+
+    if (x0 > x1) std::swap(x0, x1); // left to right
+
+    if (x1 < 0 || x0 >= fb.width) return;
+
+    x0 = max(x0, 0);
+    x1 = min(x1, fb.width - 1);
+
+    int length = x1 - x0 + 1;
+    if (length <= 0) return;
+
+    uint32_t* p = fb.pixels + y * fb.width + x0;
+
+    while (length--)
+        *p++ = color;
+}
+
+uint32_t argb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+    return ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 }
