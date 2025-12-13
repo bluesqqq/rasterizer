@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include "FrameBuffer.h"
 #include <cmath>
+#include "Mesh.h"
 
 static FrameBuffer g_framebuffer;
 static HWND g_hwnd;
@@ -15,15 +16,14 @@ void update() {
 }
 
 float i = 0;
+Mesh mesh("assets/diablo3_pose.obj");
 
 void render() {
     if (!g_framebuffer.pixels) return;
 
     g_framebuffer.clear(0xFF000000); // ARGB
 
-    fillRect(g_framebuffer, 50, 200, 200, 300, 0xFFFF0000);
-    fillTriangle(g_framebuffer, 500, 500, 500 + cos(i) * 300, 500 + sin(i) * 300, 200, 75, 0xFF00FF00);
-    drawTriangle(g_framebuffer, 500, 500, 500 + cos(i) * 300, 500 + sin(i) * 300, 200, 75, 0xFFFF0000);
+    mesh.draw(g_framebuffer, 0xFFFF0000);
 
     g_framebuffer.present(g_hwnd);
 

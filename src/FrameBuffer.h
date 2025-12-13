@@ -66,3 +66,5 @@ void fillBottomFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int
 void fillTopFlatTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 
 void fillTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+
+uint32_t argb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);

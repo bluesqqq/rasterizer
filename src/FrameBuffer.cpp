@@ -151,21 +151,25 @@ inline void sortByY(int& x0, int& y0, int& x1, int& y1, int& x2, int& y2) {
     if (y1 > y2) { std::swap(x1, x2); std::swap(y1, y2); }
 }
 
+inline float signed_triangle_area(int x0, int y0, int x1, int y1, int x2, int y2) {
+    return 0.5f * ((y1 - y0) * (x1 + x0) + (y2 - y1) * (x2 + x1) + (y0 - y2) * (x0 + x2));
+}
+
 void fillTriangle(FrameBuffer &fb, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-    // https://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html
-
-    sortByY(x0, y0, x1, y1, x2, y2);
-
-    if (y1 == y2) { 
-        fillBottomFlatTriangle(fb, x0, y0, x1, y1, x2, y2, color);
-    } else if (y0 == y1) {
-        fillTopFlatTriangle(fb, x0, y0, x1, y1, x2, y2, color);
-    } else { // split into topflat and bottom flat
-        int x3 = (int)(x0 + (float)(y1 - y0)* (x2 - x0) / (y2 - y0));
-        int y3 = y1;
-
-        fillBottomFlatTriangle(fb, x0, y0, x1, y1, x3, y3, color);
-        fillTopFlatTriangle(fb, x1, y1, x3, y3, x2, y2, color);
+    int bbminx = min(min(x0, x1), x2);
+    int bbminy = min(min(y0, y1), y2);
+    int bbmaxx = max(max(x0, x1), x2);
+    int bbmaxy = max(max(y0, y1), y2);
+    float totalArea = signed_triangle_area(x0, y0, x1, y1, x2, y2);
+    
+    for (int x = bbminx; x <= bbmaxx; x++) {
+        for (int y = bbminy; y <= bbmaxy; y++) {
+            float alpha = signed_triangle_area(x, y, x1, y1, x2, y2) / totalArea;
+            float beta = signed_triangle_area(x, y, x2, y2, x0, y0)  / totalArea;
+            float gamma = signed_triangle_area(x, y, x0, y0, x1, y1) / totalArea;
+            if (alpha < 0 || beta < 0 || gamma < 0) continue;
+            fb.setPix(x, y, color);
+        }
     }
 }
 
@@ -230,6 +234,6 @@ void drawScanline(FrameBuffer &fb, int x0, int y, int x1, uint32_t color) {
         *p++ = color;
 }
 
-uint32_t argb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+uint32_t argb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 }
